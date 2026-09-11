@@ -68,7 +68,6 @@ func (s *KafkaService) buildClientOptions(cfg models.ConnectionConfig) ([]kgo.Op
 		kgo.SeedBrokers(cfg.Brokers...),
 		kgo.RecordPartitioner(kgo.RoundRobinPartitioner()),
 		kgo.ProducerBatchMaxBytes(4 * 1024 * 1024),
-		kgo.MaxProduceRequestsInflightPerBroker(32),
 		kgo.BrokerMaxReadBytes(100 * 1024 * 1024),
 		kgo.BrokerMaxWriteBytes(100 * 1024 * 1024),
 	}
