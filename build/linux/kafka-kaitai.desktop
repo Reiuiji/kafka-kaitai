@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=kafka-kaitai
+Exec=kafka-kaitai
+Icon=kafka-kaitai
+Categories=Development;
+Terminal=false
+Keywords=wails
+Version=1.0
+StartupNotify=false

@@ -1,0 +1,30 @@
+package main
+
+import (
+	"bytes"
+	"encoding/json"
+	"io"
+	"log"
+	"os"
+
+	"github.com/kaitai-io/kaitai_struct_go_runtime/kaitai"
+)
+
+func main() {
+	raw, err := io.ReadAll(os.Stdin)
+	if err != nil {
+		log.Fatalf("failed to read stdin: %v", err)
+	}
+
+	stream := kaitai.NewStream(bytes.NewReader(raw))
+	parser := New{{.StructName}}()
+	if err := parser.Read(stream, nil, parser); err != nil {
+		log.Fatalf("kaitai parse error: %v", err)
+	}
+
+	encoder := json.NewEncoder(os.Stdout)
+	encoder.SetIndent("", "  ")
+	if err := encoder.Encode(parser); err != nil {
+		log.Fatalf("json encode error: %v", err)
+	}
+}

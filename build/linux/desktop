@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.0
+Name=My Product
+Comment=A kafka_kaitai application
+# The Exec line includes %u to pass the URL to the application
+Exec=/usr/local/bin/kafka_kaitai %u
+Terminal=false
+Type=Application
+Icon=kafka_kaitai
+Categories=Utility;
+StartupWMClass=kafka_kaitai
+
+ 
