@@ -3,7 +3,7 @@
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
-import { Call as $Call, CancellablePromise as $CancellablePromise } from "@wailsio/runtime";
+import { Call as $Call, CancellablePromise as $CancellablePromise, Create as $Create } from "@wailsio/runtime";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
@@ -20,7 +20,9 @@ export function AlterTopicConfig(topic: string, key: string, value: string): $Ca
  * Connect establishes a connection to the Kafka cluster
  */
 export function Connect(cfg: models$0.ConnectionConfig): $CancellablePromise<models$0.ConnectionStatus | null> {
-    return $Call.ByID(1964317031, cfg);
+    return $Call.ByID(1964317031, cfg).then(($result: any) => {
+        return $$createType1($result);
+    });
 }
 
 /**
@@ -45,52 +47,75 @@ export function Disconnect(): $CancellablePromise<void> {
 }
 
 /**
+ * GetClusterFlow returns the real-time topology and data rate flow across Producers, Brokers, Partitions, and Consumers
+ */
+export function GetClusterFlow(topic: string): $CancellablePromise<models$0.ClusterFlowData | null> {
+    return $Call.ByID(3646218229, topic).then(($result: any) => {
+        return $$createType3($result);
+    });
+}
+
+/**
  * GetConsumerMetrics returns consumer throughput metrics
  */
 export function GetConsumerMetrics(): $CancellablePromise<models$0.ConsumerBenchmarkMetrics> {
-    return $Call.ByID(2624447970);
+    return $Call.ByID(2624447970).then(($result: any) => {
+        return $$createType4($result);
+    });
 }
 
 /**
  * GetStatus returns the current connection status
  */
 export function GetStatus(): $CancellablePromise<models$0.ConnectionStatus> {
-    return $Call.ByID(1017657287);
+    return $Call.ByID(1017657287).then(($result: any) => {
+        return $$createType0($result);
+    });
 }
 
 /**
  * GetStressTestMetrics returns real-time stress testing stats
  */
 export function GetStressTestMetrics(): $CancellablePromise<models$0.StressTestMetrics> {
-    return $Call.ByID(127675038);
+    return $Call.ByID(127675038).then(($result: any) => {
+        return $$createType5($result);
+    });
 }
 
 /**
  * GetTopicDetail retrieves partition metadata and broker topic configurations
  */
 export function GetTopicDetail(name: string): $CancellablePromise<models$0.TopicDetail | null> {
-    return $Call.ByID(2296065405, name);
+    return $Call.ByID(2296065405, name).then(($result: any) => {
+        return $$createType7($result);
+    });
 }
 
 /**
  * ListConsumerGroups returns active consumer groups
  */
-export function ListConsumerGroups(): $CancellablePromise<models$0.ConsumerGroupInfo[] | null> {
-    return $Call.ByID(3120934291);
+export function ListConsumerGroups(): $CancellablePromise<models$0.ConsumerGroupInfo[]> {
+    return $Call.ByID(3120934291).then(($result: any) => {
+        return $$createType9($result);
+    });
 }
 
 /**
  * ListTopics returns summaries of all topics in the cluster
  */
-export function ListTopics(): $CancellablePromise<models$0.TopicSummary[] | null> {
-    return $Call.ByID(3938136431);
+export function ListTopics(): $CancellablePromise<models$0.TopicSummary[]> {
+    return $Call.ByID(3938136431).then(($result: any) => {
+        return $$createType11($result);
+    });
 }
 
 /**
  * Produce sends a single record to Kafka
  */
 export function Produce(req: models$0.ProduceRequest): $CancellablePromise<models$0.ProduceResponse | null> {
-    return $Call.ByID(3712232365, req);
+    return $Call.ByID(3712232365, req).then(($result: any) => {
+        return $$createType13($result);
+    });
 }
 
 /**
@@ -124,13 +149,35 @@ export function StopStressTest(): $CancellablePromise<void> {
 /**
  * TailTopic fetches the last N records from a topic
  */
-export function TailTopic(req: models$0.TailRequest): $CancellablePromise<models$0.KafkaRecord[] | null> {
-    return $Call.ByID(1215022080, req);
+export function TailTopic(req: models$0.TailRequest): $CancellablePromise<models$0.KafkaRecord[]> {
+    return $Call.ByID(1215022080, req).then(($result: any) => {
+        return $$createType15($result);
+    });
 }
 
 /**
  * TestConnection checks connection without persisting it
  */
 export function TestConnection(cfg: models$0.ConnectionConfig): $CancellablePromise<models$0.ConnectionStatus | null> {
-    return $Call.ByID(1978054687, cfg);
+    return $Call.ByID(1978054687, cfg).then(($result: any) => {
+        return $$createType1($result);
+    });
 }
+
+// Private type creation functions
+const $$createType0 = models$0.ConnectionStatus.createFrom;
+const $$createType1 = $Create.Nullable($$createType0);
+const $$createType2 = models$0.ClusterFlowData.createFrom;
+const $$createType3 = $Create.Nullable($$createType2);
+const $$createType4 = models$0.ConsumerBenchmarkMetrics.createFrom;
+const $$createType5 = models$0.StressTestMetrics.createFrom;
+const $$createType6 = models$0.TopicDetail.createFrom;
+const $$createType7 = $Create.Nullable($$createType6);
+const $$createType8 = models$0.ConsumerGroupInfo.createFrom;
+const $$createType9 = $Create.Array($$createType8);
+const $$createType10 = models$0.TopicSummary.createFrom;
+const $$createType11 = $Create.Array($$createType10);
+const $$createType12 = models$0.ProduceResponse.createFrom;
+const $$createType13 = $Create.Nullable($$createType12);
+const $$createType14 = models$0.KafkaRecord.createFrom;
+const $$createType15 = $Create.Array($$createType14);

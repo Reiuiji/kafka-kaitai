@@ -6,4 +6,17 @@
 // @ts-ignore: Unused imports
 import { Create as $Create } from "@wailsio/runtime";
 
-Object.freeze($Create.Events);
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore: Unused imports
+import * as services$0 from "../../../../okuu/kafka_kaitai/services/models.js";
+
+function configure() {
+    Object.freeze(Object.assign($Create.Events, {
+        "telemetry": $$createType0,
+    }));
+}
+
+// Private type creation functions
+const $$createType0 = services$0.SystemTelemetry.createFrom;
+
+configure();

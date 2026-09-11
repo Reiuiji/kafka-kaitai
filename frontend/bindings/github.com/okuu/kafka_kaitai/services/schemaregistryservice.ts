@@ -3,7 +3,7 @@
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
-import { Call as $Call, CancellablePromise as $CancellablePromise } from "@wailsio/runtime";
+import { Call as $Call, CancellablePromise as $CancellablePromise, Create as $Create } from "@wailsio/runtime";
 
 export function Configure(url: string, user: string, pass: string): $CancellablePromise<void> {
     return $Call.ByID(2054752107, url, user, pass);
@@ -13,6 +13,11 @@ export function GetSchema(subject: string, version: number): $CancellablePromise
     return $Call.ByID(3042934488, subject, version);
 }
 
-export function ListSubjects(): $CancellablePromise<string[] | null> {
-    return $Call.ByID(3506808344);
+export function ListSubjects(): $CancellablePromise<string[]> {
+    return $Call.ByID(3506808344).then(($result: any) => {
+        return $$createType0($result);
+    });
 }
+
+// Private type creation functions
+const $$createType0 = $Create.Array($Create.Any);

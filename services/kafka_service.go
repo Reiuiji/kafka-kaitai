@@ -1186,3 +1186,131 @@ func (s *KafkaService) formatRecord(r *kgo.Record) models.KafkaRecord {
 
 	return rec
 }
+
+// GetClusterFlow returns the real-time topology and data rate flow across Producers, Brokers, Partitions, and Consumers
+func (s *KafkaService) GetClusterFlow(topic string) (*models.ClusterFlowData, error) {
+	s.mu.RLock()
+	cl := s.client
+	s.mu.RUnlock()
+
+	if cl == nil {
+		return nil, errors.New("not connected to kafka")
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	// 1. Fetch cluster metadata
+	req := kmsg.NewMetadataRequest()
+	resp, err := req.RequestWith(ctx, cl)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch metadata: %w", err)
+	}
+
+	clusterID := ""
+	if resp.ClusterID != nil {
+		clusterID = *resp.ClusterID
+	}
+
+	// Default to first topic if none specified
+	targetTopic := strings.TrimSpace(topic)
+	if targetTopic == "" && len(resp.Topics) > 0 {
+		for _, t := range resp.Topics {
+			if t.Topic != nil && *t.Topic != "" && !strings.HasPrefix(*t.Topic, "_") {
+				targetTopic = *t.Topic
+				break
+			}
+		}
+	}
+
+	// 2. Fetch end offsets (watermarks) for the topic
+	adm := kadm.NewClient(cl)
+	var endOffsets kadm.ListedOffsets
+	if targetTopic != "" {
+		endOffsets, _ = adm.ListEndOffsets(ctx, targetTopic)
+	}
+
+	// 3. Find topic partition metadata
+	var topicPartitions []models.PartitionFlowNode
+	var totalMessages int64
+
+	for _, t := range resp.Topics {
+		if t.Topic != nil && *t.Topic == targetTopic {
+			for _, p := range t.Partitions {
+				var hw int64
+				if endOffsets != nil {
+					if off, ok := endOffsets.Lookup(targetTopic, p.Partition); ok && off.Err == nil {
+						hw = off.Offset
+						totalMessages += hw
+					}
+				}
+
+				topicPartitions = append(topicPartitions, models.PartitionFlowNode{
+					ID:            p.Partition,
+					Leader:        p.Leader,
+					Replicas:      p.Replicas,
+					ISR:           p.ISR,
+					HighWatermark: hw,
+				})
+			}
+			break
+		}
+	}
+
+	sort.Slice(topicPartitions, func(i, j int) bool {
+		return topicPartitions[i].ID < topicPartitions[j].ID
+	})
+
+	// 4. Get active stress producer & consumer metrics
+	stress := s.GetStressTestMetrics()
+	consumer := s.GetConsumerMetrics()
+
+	// 5. Group partitions by broker and calculate broker-level data rates
+	brokersMap := make(map[int32]*models.BrokerFlowNode)
+	for _, b := range resp.Brokers {
+		brokersMap[b.NodeID] = &models.BrokerFlowNode{
+			NodeID:       b.NodeID,
+			Host:         b.Host,
+			Port:         b.Port,
+			IsController: b.NodeID == resp.ControllerID,
+			Rack:         "",
+			Partitions:   []models.PartitionFlowNode{},
+		}
+	}
+
+	numBrokers := len(resp.Brokers)
+	for _, p := range topicPartitions {
+		node, ok := brokersMap[p.Leader]
+		if ok {
+			node.Partitions = append(node.Partitions, p)
+		}
+	}
+
+	var brokers []models.BrokerFlowNode
+	for _, b := range resp.Brokers {
+		node := brokersMap[b.NodeID]
+		if node != nil {
+			// If stress test is active on this topic, distribute throughput across brokers proportionally
+			if stress.Active && (stress.Topic == targetTopic || targetTopic == "") && numBrokers > 0 {
+				node.ThroughputMb = stress.CurrentByteRate / float64(numBrokers) / (1024 * 1024)
+				node.MsgRate = stress.CurrentMsgRate / float64(numBrokers)
+			}
+			brokers = append(brokers, *node)
+		}
+	}
+
+	sort.Slice(brokers, func(i, j int) bool {
+		return brokers[i].NodeID < brokers[j].NodeID
+	})
+
+	return &models.ClusterFlowData{
+		Topic:           targetTopic,
+		ClusterID:       clusterID,
+		ControllerID:    resp.ControllerID,
+		Brokers:         brokers,
+		TotalPartitions: len(topicPartitions),
+		TotalMessages:   totalMessages,
+		Producer:        stress,
+		Consumer:        consumer,
+	}, nil
+}

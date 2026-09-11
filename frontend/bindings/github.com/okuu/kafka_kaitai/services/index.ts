@@ -12,6 +12,6 @@ export {
     SchemaRegistryService
 };
 
-export type {
+export {
     SystemTelemetry
 } from "./models.js";

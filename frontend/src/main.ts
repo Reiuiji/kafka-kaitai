@@ -5,6 +5,7 @@ import { renderDashboard } from "./views/dashboard";
 import { renderConnections } from "./views/connections";
 import { renderTopics } from "./views/topics";
 import { renderProducer } from "./views/producer";
+import { renderClusterFlow, updateClusterFlowLive } from "./views/flow";
 import { renderKaitai } from "./views/kaitai";
 import { renderSchemaRegistry } from "./views/schemaregistry";
 import "./styles/theme.css";
@@ -31,6 +32,10 @@ function renderAppShell() {
           <div class="nav-item ${store.activeView === 'dashboard' ? 'active' : ''}" data-view="dashboard">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
             Dashboard
+          </div>
+          <div class="nav-item ${store.activeView === 'flow' ? 'active' : ''}" data-view="flow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="12" r="3"/><line x1="8.5" y1="7.5" x2="15.5" y2="10.5"/><line x1="8.5" y1="16.5" x2="15.5" y2="13.5"/></svg>
+            Cluster Flow
           </div>
           <div class="nav-item ${store.activeView === 'topics' ? 'active' : ''}" data-view="topics">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
@@ -119,6 +124,9 @@ function mountView() {
   switch (store.activeView) {
     case "dashboard":
       mount.appendChild(renderDashboard());
+      break;
+    case "flow":
+      mount.appendChild(renderClusterFlow());
       break;
     case "topics":
       mount.appendChild(renderTopics());
@@ -241,6 +249,10 @@ async function init() {
         if (consMsgEl) consMsgEl.innerHTML = `${cons.currentMsgRate.toFixed(0)} <span class="metric-unit">msg/s</span>`;
         if (consByteEl) consByteEl.innerHTML = `${(cons.currentByteRate / (1024 * 1024)).toFixed(2)} <span class="metric-unit">MB/s</span>`;
         if (topConsEl) topConsEl.innerText = cons.active ? `${cons.currentMsgRate.toFixed(0)} msg/s` : "OFF";
+      }
+
+      if (store.activeView === "flow") {
+        updateClusterFlowLive();
       }
     } catch {}
   }, 400);

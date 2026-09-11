@@ -3,7 +3,7 @@
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
-import { Call as $Call, CancellablePromise as $CancellablePromise } from "@wailsio/runtime";
+import { Call as $Call, CancellablePromise as $CancellablePromise, Create as $Create } from "@wailsio/runtime";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
@@ -13,7 +13,9 @@ import * as models$0 from "../models/models.js";
  * BuildFormat compiles the format into a standalone binary
  */
 export function BuildFormat(id: string): $CancellablePromise<models$0.KaitaiFormat | null> {
-    return $Call.ByID(2615793129, id);
+    return $Call.ByID(2615793129, id).then(($result: any) => {
+        return $$createType1($result);
+    });
 }
 
 /**
@@ -27,26 +29,41 @@ export function DeleteFormat(id: string): $CancellablePromise<void> {
  * GetFormat retrieves a single format
  */
 export function GetFormat(id: string): $CancellablePromise<models$0.KaitaiFormat | null> {
-    return $Call.ByID(3665121229, id);
+    return $Call.ByID(3665121229, id).then(($result: any) => {
+        return $$createType1($result);
+    });
 }
 
 /**
  * ImportFormat creates a new format from KSY source
  */
 export function ImportFormat(name: string, ksyContent: string): $CancellablePromise<models$0.KaitaiFormat | null> {
-    return $Call.ByID(1984410520, name, ksyContent);
+    return $Call.ByID(1984410520, name, ksyContent).then(($result: any) => {
+        return $$createType1($result);
+    });
 }
 
 /**
  * ListFormats returns all registered Kaitai formats
  */
-export function ListFormats(): $CancellablePromise<models$0.KaitaiFormat[] | null> {
-    return $Call.ByID(4103769642);
+export function ListFormats(): $CancellablePromise<models$0.KaitaiFormat[]> {
+    return $Call.ByID(4103769642).then(($result: any) => {
+        return $$createType2($result);
+    });
 }
 
 /**
  * ParseBinary decodes binary data using a compiled Kaitai format
  */
 export function ParseBinary(req: models$0.ParseRequest): $CancellablePromise<models$0.ParseResult | null> {
-    return $Call.ByID(3247095756, req);
+    return $Call.ByID(3247095756, req).then(($result: any) => {
+        return $$createType4($result);
+    });
 }
+
+// Private type creation functions
+const $$createType0 = models$0.KaitaiFormat.createFrom;
+const $$createType1 = $Create.Nullable($$createType0);
+const $$createType2 = $Create.Array($$createType0);
+const $$createType3 = models$0.ParseResult.createFrom;
+const $$createType4 = $Create.Nullable($$createType3);
