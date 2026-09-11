@@ -53,6 +53,47 @@ export function renderDashboard(): HTMLElement {
         </div>
       </div>
 
+      <!-- Cluster Broker Topology Card -->
+      ${store.connection.connected && store.connection.brokers.length > 0 ? `
+        <div class="card" style="padding: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <div style="font-weight: 600; font-size: 13px; display: flex; align-items: center; gap: 8px;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+              Active Broker Topology (${store.connection.brokers.length} ${store.connection.brokers.length === 1 ? 'Node' : 'Nodes'})
+            </div>
+            ${store.connection.brokers.length < 3 ? `
+              <div style="font-size: 11px; color: var(--text-muted);">
+                Tip: Run <code style="color: var(--accent-cyan);">make cluster-up</code> to scale to 3 brokers for 1,000+ MB/s.
+              </div>
+            ` : `
+              <span class="badge" style="background: rgba(16, 185, 129, 0.15); color: var(--accent-emerald); font-size: 11px; padding: 2px 8px; border-radius: 9999px;">
+                High-Performance Multi-Node Cluster
+              </span>
+            `}
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px;">
+            ${store.connection.brokers.map(b => {
+              const isController = b.includes(`node ${store.connection.controllerId}`) || b.endsWith(`(${store.connection.controllerId})`);
+              return `
+                <div style="background: var(--bg-tertiary); border: 1px solid var(--border-subtle); border-radius: 6px; padding: 10px 12px; display: flex; align-items: center; justify-content: space-between;">
+                  <div style="display: flex; align-items: center; gap: 8px; overflow: hidden;">
+                    <span class="status-dot connected" style="width: 8px; height: 8px; flex-shrink: 0;"></span>
+                    <span style="font-family: var(--font-mono); font-size: 12px; font-weight: 500; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">
+                      ${b}
+                    </span>
+                  </div>
+                  ${isController ? `
+                    <span style="background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan); font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 4px; flex-shrink: 0;">
+                      Controller
+                    </span>
+                  ` : ''}
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      ` : ''}
+
       <!-- Real-Time Throughput Meters (Producer & Consumer) -->
       <div class="grid-2">
         <!-- Producer Metrics Card -->

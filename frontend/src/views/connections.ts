@@ -31,8 +31,22 @@ export function renderConnections(): HTMLElement {
         </div>
 
         <div class="form-group">
-          <label class="form-label">Seed Brokers (comma separated)</label>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <label class="form-label" style="margin-bottom: 0;">Seed Brokers (comma separated)</label>
+            <div style="display: flex; gap: 8px;">
+              <button type="button" class="btn btn-secondary btn-sm" id="preset-single" style="font-size: 11px; padding: 2px 8px; height: 24px;">
+                Single (9092)
+              </button>
+              <button type="button" class="btn btn-primary btn-sm" id="preset-cluster" style="font-size: 11px; padding: 2px 8px; height: 24px;">
+                ⚡ 3-Broker Cluster (9092-9094)
+              </button>
+            </div>
+          </div>
           <input class="input" id="cfg-brokers" value="localhost:9092" placeholder="localhost:9092, kafka-broker-2:9092" />
+          <div style="font-size: 11px; color: var(--text-muted); margin-top: 6px; display: flex; align-items: center; gap: 6px;">
+            <span style="color: var(--accent-cyan);">💡 Performance Tip:</span>
+            <span>Distribute load across multiple brokers to exceed 1,000 MB/s. Launch via <code style="background: rgba(255,255,255,0.06); padding: 1px 4px; border-radius: 4px; color: var(--accent-cyan);">make cluster-up</code>.</span>
+          </div>
         </div>
 
         <div class="grid-2">
@@ -151,6 +165,18 @@ export function renderConnections(): HTMLElement {
 
   authSelect.addEventListener('change', updateAuthFields);
   tlsCheckbox.addEventListener('change', updateAuthFields);
+
+  container.querySelector('#preset-single')?.addEventListener('click', () => {
+    (container.querySelector('#cfg-brokers') as HTMLInputElement).value = 'localhost:9092';
+    (container.querySelector('#cfg-name') as HTMLInputElement).value = 'Single Broker';
+    showToast('Applied Single Broker preset (localhost:9092)', 'info');
+  });
+
+  container.querySelector('#preset-cluster')?.addEventListener('click', () => {
+    (container.querySelector('#cfg-brokers') as HTMLInputElement).value = 'localhost:9092, localhost:9093, localhost:9094';
+    (container.querySelector('#cfg-name') as HTMLInputElement).value = '3-Broker KRaft Cluster';
+    showToast('Applied 3-Broker Cluster preset (ports 9092, 9093, 9094)', 'info');
+  });
 
   function getFormConfig(): ConnectionConfig {
     const brokers = (container.querySelector('#cfg-brokers') as HTMLInputElement).value

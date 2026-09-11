@@ -47,6 +47,10 @@ help:
 	@echo "  make kafka-down          Stop and remove the local Kafka container"
 	@echo "  make kafka-status        Check if the local Kafka container is running"
 	@echo "  make kafka-logs          View logs of the local Kafka container"
+	@echo "  make cluster-up          Start 3-broker KRaft cluster on ports 9092, 9093, 9094"
+	@echo "  make cluster-down        Stop and cleanup 3-broker KRaft cluster"
+	@echo "  make cluster-status      Show status of 3-broker KRaft cluster"
+	@echo "  make cluster-logs        Follow logs for cluster (optional: BROKER=kafka-2)"
 
 # ------------------------------------------------------------------------------
 # Build & Dev Targets
@@ -107,12 +111,31 @@ kafka-up:
 kafka-down:
 	@echo "==> Stopping and removing Kafka container ($(KAFKA_CONTAINER))..."
 	@-$(PODMAN) stop $(KAFKA_CONTAINER) 2>/dev/null || true
-	@-$(PODMAN) rm $(KAFKA_CONTAINER) 2>/dev/null || true
-	@echo "==> Container stopped."
-
-kafka-status:
-	@echo "==> Checking Kafka container status:"
 	@$(PODMAN) ps -a --filter "name=^$(KAFKA_CONTAINER)$$"
 
 kafka-logs:
 	@$(PODMAN) logs -f $(KAFKA_CONTAINER)
+
+# ------------------------------------------------------------------------------
+# Multi-Broker KRaft Cluster Targets (3-Broker Scaled Perf)
+# ------------------------------------------------------------------------------
+
+kafka-cluster-up:
+	@PODMAN="$(PODMAN)" KAFKA_IMAGE="$(KAFKA_IMAGE)" ./scripts/kafka-cluster.sh up
+
+cluster-up: kafka-cluster-up
+
+kafka-cluster-down:
+	@PODMAN="$(PODMAN)" ./scripts/kafka-cluster.sh down
+
+cluster-down: kafka-cluster-down
+
+kafka-cluster-status:
+	@PODMAN="$(PODMAN)" ./scripts/kafka-cluster.sh status
+
+cluster-status: kafka-cluster-status
+
+kafka-cluster-logs:
+	@PODMAN="$(PODMAN)" ./scripts/kafka-cluster.sh logs $(BROKER)
+
+cluster-logs: kafka-cluster-logs

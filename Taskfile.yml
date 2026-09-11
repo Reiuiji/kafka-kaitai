@@ -63,3 +63,23 @@ tasks:
     summary: Builds and runs the Docker image
     cmds:
       - task: common:run:docker
+
+  cluster:up:
+    summary: Starts 3-broker local Kafka cluster via Podman
+    cmds:
+      - ./scripts/kafka-cluster.sh up
+
+  cluster:down:
+    summary: Stops 3-broker local Kafka cluster via Podman
+    cmds:
+      - ./scripts/kafka-cluster.sh down
+
+  cluster:status:
+    summary: Displays status of 3-broker local Kafka cluster
+    cmds:
+      - ./scripts/kafka-cluster.sh status
+
+  cluster:logs:
+    summary: Streams logs of 3-broker local Kafka cluster
+    cmds:
+      - ./scripts/kafka-cluster.sh logs {{.CLI_ARGS}}
