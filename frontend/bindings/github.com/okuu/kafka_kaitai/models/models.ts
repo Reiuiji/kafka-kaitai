@@ -245,6 +245,7 @@ export interface StressTestMetrics {
     "currentMsgRate": number;
     "currentByteRate": number;
     "errorsCount": number;
+    "lastError"?: string;
 
     /**
      * ms
