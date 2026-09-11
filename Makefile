@@ -103,6 +103,8 @@ kafka-up:
 		$(PODMAN) run -d \
 			--name $(KAFKA_CONTAINER) \
 			-p $(KAFKA_PORT):9092 \
+			-e KAFKA_MESSAGE_MAX_BYTES=52428800 \
+			-e KAFKA_REPLICA_FETCH_MAX_BYTES=52428800 \
 			$(KAFKA_IMAGE); \
 	fi
 	@echo "==> Kafka is starting on localhost:$(KAFKA_PORT)"
