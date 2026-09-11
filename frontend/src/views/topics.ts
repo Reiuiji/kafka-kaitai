@@ -353,6 +353,29 @@ export function renderTopics(): HTMLElement {
             </div>
           </div>
 
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label">Compression Type (compression.type)</label>
+              <select class="select select-sm" id="create-compression-type">
+                <option value="producer" selected>producer (Retain producer compression)</option>
+                <option value="lz4">lz4 (Fastest wire speed & lowest CPU — Recommended)</option>
+                <option value="zstd">zstd (Best compression ratio with high speed)</option>
+                <option value="snappy">snappy (Balanced speed and ratio)</option>
+                <option value="gzip">gzip (High compression ratio)</option>
+                <option value="uncompressed">uncompressed (Disable broker compression)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Min In-Sync Replicas (min.insync.replicas)</label>
+              <select class="select select-sm" id="create-min-isr">
+                <option value="1" selected>1 (Max throughput / Local single-node)</option>
+                <option value="2">2 (Standard HA production durability)</option>
+                <option value="3">3 (Strict durability)</option>
+              </select>
+            </div>
+          </div>
+
           <!-- Dynamic Custom Config Entries -->
           <div>
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
@@ -778,6 +801,8 @@ export function renderTopics(): HTMLElement {
     (container.querySelector('#create-topic-name') as HTMLInputElement).value = '';
     (container.querySelector('#create-topic-partitions') as HTMLInputElement).value = '1';
     (container.querySelector('#create-topic-rf') as HTMLInputElement).value = '1';
+    (container.querySelector('#create-compression-type') as HTMLSelectElement).value = 'producer';
+    (container.querySelector('#create-min-isr') as HTMLSelectElement).value = '1';
     customConfigsContainer.innerHTML = '';
   }
 
@@ -865,6 +890,18 @@ export function renderTopics(): HTMLElement {
       if (customMax) configs['max.message.bytes'] = customMax;
     } else if (maxMsgSel && maxMsgSel !== '1048576') {
       configs['max.message.bytes'] = maxMsgSel;
+    }
+
+    // Compression type (compression.type)
+    const compressionType = (container.querySelector('#create-compression-type') as HTMLSelectElement).value;
+    if (compressionType) {
+      configs['compression.type'] = compressionType;
+    }
+
+    // Min in-sync replicas (min.insync.replicas)
+    const minIsr = (container.querySelector('#create-min-isr') as HTMLSelectElement).value;
+    if (minIsr) {
+      configs['min.insync.replicas'] = minIsr;
     }
 
     // Add any dynamic custom config rows
