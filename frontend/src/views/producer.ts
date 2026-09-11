@@ -54,6 +54,16 @@ export function renderProducer(): HTMLElement {
             </div>
           </div>
 
+          <div id="prod-error-box" style="display: ${store.stressMetrics.errorsCount > 0 ? 'block' : 'none'}; margin-bottom: 16px; background: rgba(239, 68, 68, 0.15); border: 1px solid var(--accent-rose); border-radius: 6px; padding: 10px 14px; color: var(--accent-rose); font-size: 12px;">
+            <div style="font-weight: 600; display: flex; align-items: center; gap: 6px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              Produce Errors Detected (<span id="prod-stat-errors">${store.stressMetrics.errorsCount}</span>)
+            </div>
+            <div id="prod-stat-lasterror" style="margin-top: 4px; font-family: var(--font-mono); font-size: 11px; opacity: 0.9;">
+              ${store.stressMetrics.lastError || ''}
+            </div>
+          </div>
+
           <div style="display: flex; justify-content: flex-end; gap: 12px;" id="prod-action-btn-container">
             ${store.stressMetrics.active ? `
               <button class="btn btn-danger" id="btn-stress-stop">

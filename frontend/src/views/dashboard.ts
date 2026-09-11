@@ -128,8 +128,12 @@ export function renderDashboard(): HTMLElement {
             </div>
             <div class="metric-box" style="padding: 10px;">
               <span class="metric-label">Errors</span>
-              <span style="font-size: 16px; font-weight: 700; font-family: var(--font-mono); color: ${store.stressMetrics.errorsCount > 0 ? 'var(--accent-rose)' : 'var(--text-secondary)'};">${store.stressMetrics.errorsCount}</span>
+              <span id="dash-prod-errors" style="font-size: 16px; font-weight: 700; font-family: var(--font-mono); color: ${store.stressMetrics.errorsCount > 0 ? 'var(--accent-rose)' : 'var(--text-secondary)'};">${store.stressMetrics.errorsCount}</span>
             </div>
+          </div>
+
+          <div id="dash-prod-err-box" style="display: ${store.stressMetrics.errorsCount > 0 ? 'block' : 'none'}; margin-top: 10px; background: rgba(239, 68, 68, 0.12); border: 1px solid var(--accent-rose); border-radius: 6px; padding: 6px 10px; color: var(--accent-rose); font-size: 11px; font-family: var(--font-mono);">
+            ${store.stressMetrics.lastError || ''}
           </div>
         </div>
 

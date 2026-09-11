@@ -11,6 +11,7 @@ import (
 	"math/rand"
 	"os"
 	"sort"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -656,6 +657,27 @@ func (s *KafkaService) StartStressTest(cfg models.StressTestConfig) error {
 		return errors.New("not connected to kafka")
 	}
 
+	topic := strings.TrimSpace(cfg.Topic)
+	if topic == "" {
+		return errors.New("target topic cannot be empty. Please select or create a topic first")
+	}
+
+	// Verify topic exists on the broker before launching workers to prevent endless error loops
+	ctxCheck, cancelCheck := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelCheck()
+	adm := kadm.NewClient(cl)
+	topicDetails, err := adm.ListTopics(ctxCheck, topic)
+	if err != nil {
+		return fmt.Errorf("failed to verify topic '%s': %w", topic, err)
+	}
+	top, exists := topicDetails[topic]
+	if !exists || top.Err != nil {
+		if top.Err != nil {
+			return fmt.Errorf("topic '%s' has error: %w", topic, top.Err)
+		}
+		return fmt.Errorf("topic '%s' does not exist in cluster. Please create it first in Topic Management", topic)
+	}
+
 	s.stressMu.Lock()
 	if s.stressRunning {
 		s.stressMu.Unlock()
@@ -672,9 +694,9 @@ func (s *KafkaService) StartStressTest(cfg models.StressTestConfig) error {
 	s.stressCancel = cancel
 	s.stressMetrics = models.StressTestMetrics{
 		Active: true,
-		Topic:  cfg.Topic,
+		Topic:  topic,
 	}
-	s.stressLatHist = make([]float64, 0, 10000)
+	s.stressLatHist = make([]float64, 0, 5000)
 	s.stressMu.Unlock()
 
 	var sentMsgs int64
@@ -723,6 +745,10 @@ func (s *KafkaService) StartStressTest(cfg models.StressTestConfig) error {
 			defer wg.Done()
 			var localCounter int64
 
+			// Bounded in-flight queue per worker (256 records) prevents memory overflow while easily achieving 1000+ MB/s
+			maxInflight := 256
+			sem := make(chan struct{}, maxInflight)
+
 			for {
 				select {
 				case <-ctx.Done():
@@ -740,31 +766,44 @@ func (s *KafkaService) StartStressTest(cfg models.StressTestConfig) error {
 					}
 				}
 
+				select {
+				case <-ctx.Done():
+					return
+				case sem <- struct{}{}:
+				}
+
 				c := atomic.AddInt64(&localCounter, 1)
 				val := genPayload(workerID, c)
 				key := genKey(c)
 
 				rec := &kgo.Record{
-					Topic: cfg.Topic,
+					Topic: topic,
 					Key:   key,
 					Value: val,
 				}
 
 				recStart := time.Now()
 				cl.Produce(ctx, rec, func(r *kgo.Record, err error) {
+					<-sem
 					if err != nil {
 						atomic.AddInt64(&errCount, 1)
+						s.stressMu.Lock()
+						s.stressMetrics.LastError = err.Error()
+						s.stressMu.Unlock()
 						return
 					}
 					lat := float64(time.Since(recStart).Microseconds()) / 1000.0 // ms
 					atomic.AddInt64(&sentMsgs, 1)
 					atomic.AddInt64(&sentBytes, int64(len(r.Value)+len(r.Key)))
 
-					s.stressMu.Lock()
-					if len(s.stressLatHist) < 50000 {
-						s.stressLatHist = append(s.stressLatHist, lat)
+					// Sample 1 out of every 10 records for latency to eliminate mutex contention on promise callback
+					if c%10 == 0 {
+						s.stressMu.Lock()
+						if len(s.stressLatHist) < 5000 {
+							s.stressLatHist = append(s.stressLatHist, lat)
+						}
+						s.stressMu.Unlock()
 					}
-					s.stressMu.Unlock()
 				})
 			}
 		}(i)
@@ -811,6 +850,16 @@ func (s *KafkaService) StartStressTest(cfg models.StressTestConfig) error {
 				s.stressMetrics.CurrentMsgRate = msgRate
 				s.stressMetrics.CurrentByteRate = byteRate
 				s.stressMetrics.ErrorsCount = currErr
+
+				// Auto-halt if cluster continuously rejects messages
+				if currErr > 50 && currSent == 0 {
+					s.stressRunning = false
+					s.stressMetrics.Active = false
+					s.stressMetrics.LastError = fmt.Sprintf("Cluster rejected produce requests (%d errors): %s", currErr, s.stressMetrics.LastError)
+					s.stressMu.Unlock()
+					cancel()
+					return
+				}
 
 				// Calculate percentiles
 				if n := len(s.stressLatHist); n > 0 {

@@ -22,6 +22,7 @@ type StressTestMetrics struct {
 	CurrentMsgRate float64 `json:"currentMsgRate"`
 	CurrentByteRate float64 `json:"currentByteRate"`
 	ErrorsCount    int64   `json:"errorsCount"`
+	LastError      string  `json:"lastError,omitempty"`
 	LatencyP50     float64 `json:"latencyP50"` // ms
 	LatencyP95     float64 `json:"latencyP95"` // ms
 	LatencyP99     float64 `json:"latencyP99"` // ms

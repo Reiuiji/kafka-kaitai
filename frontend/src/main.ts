@@ -196,9 +196,16 @@ async function init() {
         store.stressMetrics = stress;
         const prodMsgEl = document.getElementById("dash-prod-msgrate");
         const prodByteEl = document.getElementById("dash-prod-byterate");
+        const prodErrEl = document.getElementById("dash-prod-errors");
+        const prodErrBox = document.getElementById("dash-prod-err-box");
         const topStressEl = document.getElementById("topbar-stress");
         if (prodMsgEl) prodMsgEl.innerHTML = `${stress.currentMsgRate.toFixed(0)} <span class="metric-unit">msg/s</span>`;
         if (prodByteEl) prodByteEl.innerHTML = `${(stress.currentByteRate / (1024 * 1024)).toFixed(2)} <span class="metric-unit">MB/s</span>`;
+        if (prodErrEl) prodErrEl.innerText = stress.errorsCount.toLocaleString();
+        if (prodErrBox) {
+          prodErrBox.style.display = stress.errorsCount > 0 ? 'block' : 'none';
+          prodErrBox.innerText = (stress as any).lastError || '';
+        }
         if (topStressEl) topStressEl.innerText = stress.active ? `${stress.currentMsgRate.toFixed(0)} msg/s` : "OFF";
 
         // Update Producer View Live Telemetry if mounted
@@ -209,6 +216,9 @@ async function init() {
         const pDot = document.getElementById("prod-status-dot");
         const pBadge = document.getElementById("prod-status-badge");
         const pCard = document.getElementById("prod-telemetry-card");
+        const pErrBox = document.getElementById("prod-error-box");
+        const pErrCount = document.getElementById("prod-stat-errors");
+        const pErrText = document.getElementById("prod-stat-lasterror");
 
         if (pMsgEl) pMsgEl.innerHTML = `${stress.currentMsgRate.toFixed(0)} <span class="metric-unit">msg/s</span>`;
         if (pByteEl) pByteEl.innerHTML = `${(stress.currentByteRate / (1024 * 1024)).toFixed(2)} <span class="metric-unit">MB/s</span>`;
@@ -216,7 +226,10 @@ async function init() {
         if (pTotEl) pTotEl.innerText = stress.sentMessages.toLocaleString();
         if (pDot) pDot.className = `status-dot ${stress.active ? 'connected' : 'disconnected'}`;
         if (pBadge) pBadge.innerText = stress.active ? 'RUNNING' : 'STOPPED';
-        if (pCard) pCard.style.borderColor = stress.active ? 'var(--accent-cyan)' : 'var(--border-subtle)';
+        if (pCard) pCard.style.borderColor = stress.active ? 'var(--accent-cyan)' : (stress.errorsCount > 0 ? 'var(--accent-rose)' : 'var(--border-subtle)');
+        if (pErrBox) pErrBox.style.display = stress.errorsCount > 0 ? 'block' : 'none';
+        if (pErrCount) pErrCount.innerText = stress.errorsCount.toLocaleString();
+        if (pErrText) pErrText.innerText = (stress as any).lastError || '';
       }
 
       const cons = await KafkaService.GetConsumerMetrics();
