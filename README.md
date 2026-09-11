@@ -58,6 +58,11 @@ Take a moment to familiarize yourself with your project structure:
 
 Happy coding with Wails3! If you encounter any issues or have questions, don't hesitate to consult the documentation or reach out to the Wails community.
 
+## Documentation
+
+- [Architecture Reference](docs/architecture.md): Full system architecture covering the Go backend services, Wails v3 IPC, dynamic SVG cabling engine, and Kaitai decoding pipeline.
+- [High-Speed Kafka Tuning Guide](docs/kafka_high_speed_tuning_guide.md): Deep-dive into kernel socket buffer optimizations, franz-go micro-batching, and achieving >2,400 MB/s benchmarks.
+
 ## License
 
-This project is licensed under the [MIT License](file:///var/home/okuu/projects/kafka_kaitai/LICENSE).
+This project is licensed under the [MIT License](LICENSE).
