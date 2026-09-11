@@ -83,3 +83,8 @@ tasks:
     summary: Streams logs of 3-broker local Kafka cluster
     cmds:
       - ./scripts/kafka-cluster.sh logs {{.CLI_ARGS}}
+
+  cluster:bench:
+    summary: Executes automated 30KB high-speed producer and consumer benchmark
+    cmds:
+      - go test -v -run TestClusterHealthAndHighSpeedBenchmark ./services

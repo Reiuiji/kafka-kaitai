@@ -141,3 +141,7 @@ kafka-cluster-logs:
 	@PODMAN="$(PODMAN)" ./scripts/kafka-cluster.sh logs $(BROKER)
 
 cluster-logs: kafka-cluster-logs
+
+bench-cluster:
+	@echo "==> Running High-Speed 30KB Cluster Performance Benchmark..."
+	@$(GO) test -v -run TestClusterHealthAndHighSpeedBenchmark ./services
